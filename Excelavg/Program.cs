@@ -21,7 +21,7 @@ namespace Excelavg
         const string extension = ".xlsx";
 
         const int minRow = 1;
-        const int maxRow = 999;//////////
+        const int maxRow = 999;/////////////
 
         const int minColumn = 1;
         const int maxColumn = 99;////////

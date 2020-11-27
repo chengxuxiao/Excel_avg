@@ -24,7 +24,7 @@ namespace Excelavg
         const int maxRow = 999;/////////////
 
         const int minColumn = 1;
-        const int maxColumn = 99;////////
+        const int maxColumn = 99;///////////
 
 
         static int Main(string[] args)

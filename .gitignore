@@ -1,5 +1,5 @@
-/Excelavg/obj/Debug
 
-##ignore this file##
-/Debug/
-/Release/
+*.xlsx
+Excelavg/bin/Debug/23空白.xlsx
+Excelavg/bin/Debug/D12346 - 副本.xlsx
+Excelavg/bin/Debug/DOO.xlsx

@@ -31,6 +31,9 @@ namespace Excelavg
         {
             int startRow = minRow;
             int endRow = maxRow;
+            int startRow1 = 0;
+            int endRow1 = 0;
+
 
             int leftColumn = minColumn;
             int rightColumn = maxColumn;
@@ -94,12 +97,12 @@ namespace Excelavg
                         //first
                         if (int.TryParse(excelname.Split(' ').First(), out startRow))
                         {
-                            if (startRow <= -maxRow)
+                            if (startRow < -maxRow || startRow == 0)
                             {
                                 excelType = excelType <= 1 ? 1 : excelType;
                                 continue;
                             }
-                            else if (-maxRow < startRow && startRow < 0)
+                            else if (-maxRow <= startRow && startRow < 0)
                             {
                                 //“-a空格”  “-a空格......空格”
                                 if (excelname.Last() == ' ')
@@ -107,8 +110,13 @@ namespace Excelavg
                                     excelType = 5;
                                     break;
                                 }
+                                else
+                                {
+                                    excelType = excelType <= 2 ? 2 : excelType;
+                                    continue;
+                                }
                             }
-                            else
+                            else if (minRow <= startRow && startRow <= maxRow)
                             {
                                 //last
                                 if (excelname.Last() == ' ')
@@ -133,7 +141,7 @@ namespace Excelavg
                                 }
                                 else
                                 {
-                                    //“b空格”    “b空格......”
+                                    //“a空格”    “a空格......”
                                     excelType = excelType <= 2 ? 2 : excelType;
                                     break;
                                 }
@@ -148,62 +156,53 @@ namespace Excelavg
 
             }
             //get results from  XXX XXX.xlsx
-            if (excelType < 3)
+            if (excelType <= 2)
             {
-                Console.WriteLine("\r\n******    当前文件夹没有找到 “a空格b" + extension +
-                                  "” 或者 “b空格" + extension + "”类似的文件！    ******\r\n");
+                Console.WriteLine("\r\n******    当前文件夹没有找到 “a空格b" + extension +"” 或者 “a空格" + extension + "”类似的文件！    ******\r\n");
+                Console.WriteLine("\r\n  为了调整开始行，和结束行，您需要修改文件名的【输入格式 1】：\r\n" +
+                                  "\r\n  从 [a] 行到 [b] 行, 或者 [a] 行到末尾行, 1 <= [a] <= [b] <= 999：\r\n" +
+                                  "\r\n “a空格b" + extension + "” 或者 “a空格" + extension + "”\r\n" +
+                                  "\r\n  【输入格式 2】:\r\n" +
+                                  "\r\n  从倒数 [-a] 行到末尾行，-999 <= [a] < 0：\r\n" +
+                                  "\r\n “a空格" + extension + "”\r\n");
             }
-            switch (excelType)
+            else if(excelType >= 3)
             {
-                case 0:
-                    Console.WriteLine("\r\n  为了调整开始行，和结束行，您需要修改文件名的输入格式， 1 <= [a] <= [b] <= 999：\r\n\r\n" +
-                                      " “a空格b" + extension + "” 或者 “b空格" + extension + "”\r\n");
-                    break;
-                case 1:
-                    Console.WriteLine("\r\n  为了调整开始行，和结束行，您需要修改文件名的输入格式， 1 <= [a] <= 999：\r\n\r\n" +
-                                      " “a空格b" + extension + "” 或者 “b空格" + extension + "”\r\n");
-                    break;
-                case 2:
-                    Console.WriteLine("\r\n  为了调整开始行，和结束行，您需要修改文件名的输入格式， a <= [b] <= 999：\r\n\r\n" +
-                                      " “a空格b" + extension + "” 或者 “b空格" + extension + "”\r\n");
-                    break;
-                case 3:
-                    Console.WriteLine("\r\n******    恭喜您已经找到文件！    " +
-                                      excelname + extension + "    ******\r\n");
-                    ifNewExcel = false;
-                    break;
-                case 4:
-                    Console.WriteLine("\r\n******    恭喜您已经找到文件！    " +
-                                      excelname + extension + "    ******\r\n");
-                    ifNewExcel = false;
-                    break;
-                case 5:
-                    Console.WriteLine("\r\n******    恭喜您已经找到文件！    " +
-                                      excelname + extension + "    ******\r\n");
-                    ifNewExcel = false;
-                    break;
-                default:
-                    Console.WriteLine("\r\n ERROR 543210 !\r\n");
-                    break;
+                Console.WriteLine("\r\n******    恭喜您已经找到文件！    " +excelname + extension + "    ******\r\n");
+                ifNewExcel = false;
             }
             Console.WriteLine("\r\n*************************************************\r\n");
-            //adjust startRow and endRow to create "a b.xlsx"
-            while (excelType < 3)
+            //Input numbers for startRow and endRow
+            while (excelType <= 2)
             {
                 startRow = 1;
                 endRow = 999;
-                Console.WriteLine("\r\n请按要求输入行数范围：“a空格b” 或者 “b空格” \r\n");
+                Console.WriteLine("\r\n请按要求输入行数范围：“a空格b” 或者 “a空格” \r\n");
                 excelname = Console.ReadLine();
                 //a
                 if (int.TryParse(excelname.Split(' ').First(), out startRow))
                 {
-                    if (startRow >= minRow && startRow <= maxRow)
+                    if (startRow < -maxRow || startRow == 0)
+                    {
+                        continue;
+                    }
+                    else if (-maxRow <= startRow && startRow < 0)
+                    {
+                        if (excelname.Last() == ' ')
+                        {
+                            excelType = 5;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    else if (minRow <= startRow && startRow <= maxRow)
                     {
                         if (excelname.Last() == ' ')
                         {
                             excelType = 3;
                         }
-                        //b
                         else if (int.TryParse(excelname.Split(' ').Last(), out endRow))
                         {
                             if (startRow <= endRow && endRow <= maxRow)
@@ -211,24 +210,33 @@ namespace Excelavg
                                 excelType = 4;
                             }
                         }
-
                     }
                 }
 
             }
+            //adjust startRow + endRow
             if (excelType == 3)
             {
                 startRow = int.Parse(excelname.Split(' ').First());
                 endRow = maxRow;
             }
-            else
+            else if (excelType == 4)
             {
                 startRow = int.Parse(excelname.Split(' ').First());
                 endRow = int.Parse(excelname.Split(' ').Last());
             }
-            Console.WriteLine("\r\n  开始行  =  " + string.Format("{0:G}", startRow) + "\r\n" +
-                              "  结束行  =  " + string.Format("{0:G}", endRow) +
-                              "\r\n\r\n*************************************************\r\n");
+            else if (excelType == 5)
+            {
+                startRow = int.Parse(excelname.Split(' ').First());
+                endRow = maxRow;
+
+                startRow1 = startRow;
+                endRow1 = endRow;
+            }
+
+            Console.WriteLine("\r\n  开始行  =  " + string.Format("{0:G}", startRow) +
+                              "\r\n  结束行  =  " + string.Format("{0:G}", endRow) +
+                              "\r\n****************************************************\r\n");
             //Console.ReadKey();
             //return 0;
 
@@ -283,7 +291,6 @@ namespace Excelavg
             //workbook0.Worksheets.Add(missing, missing, missing, missing);
 
             worksheet0.Cells[1, 1] = 11;
-            worksheet0.Cells[11, 11] = 1111;
 
 
             Excel.Application excel1 = new Excel.Application();
@@ -305,28 +312,54 @@ namespace Excelavg
 
                 int useRowCount = worksheet1.UsedRange.Rows.Count;
                 int useColCount = worksheet1.UsedRange.Columns.Count;
+
                 //row
+                startRow = startRow1 == 0 ? startRow : startRow1;
+                endRow = endRow1 == 0 ? endRow : endRow1;
                 if (excelType == 3)//"a .xlsx"
                 {
-                    if (startRow > (useRowCount < maxColumn ? useRowCount : maxColumn))
+                    if (startRow <= (useRowCount < maxRow ? useRowCount : maxRow))
                     {
                         Console.WriteLine("\r\n当前表格为： " + listFile.Name + ",\r\n" +
                                           "\r\n您的开始行，和结束行，超出这个 Excel 总行数:" + " 1 ~ " + useRowCount + " \r\n" +
-                                          "\r\n请根据Excel，调整输入行数范围：“a空格b” 或者 “b空格” \r\n");
+                                          "\r\n请根据Excel，调整输入行数范围：“a空格b” 或者 “a空格” \r\n");
 
                         workbook1.Close();
                         continue;
                     }
-                    endRow = useRowCount < maxColumn ? useRowCount : maxColumn;
+                    else
+                    {
+                        endRow = useRowCount < maxRow ? useRowCount : maxRow;
+                    }
                 }
-                else if (excelType == 4 || endRow > (useRowCount<maxColumn ? useRowCount : maxColumn))//"a b.xlsx"
+                else if (excelType == 4)
                 {
-                    Console.WriteLine("\r\n当前表格为： " + listFile.Name + ",\r\n" +
-                                      "\r\n您的开始行，和结束行，超出这个 Excel 总行数:" + " 1 ~ " + useRowCount + " \r\n" +
-                                      "\r\n请根据Excel，调整输入行数范围：“a空格b” 或者 “b空格” \r\n");
-                    //Console.ReadLine();
-                    workbook1.Close();
-                    continue;
+                    if (endRow > (useRowCount < maxRow ? useRowCount : maxRow))//"a b.xlsx"
+                    {
+                        Console.WriteLine("\r\n当前表格为： " + listFile.Name + ",\r\n" +
+                                          "\r\n您的开始行，和结束行，超出这个 Excel 总行数:" + " 1 ~ " + useRowCount + " \r\n" +
+                                          "\r\n请根据Excel，调整输入行数范围：“a空格b” 或者 “a空格” \r\n");
+                        //Console.ReadLine();
+                        workbook1.Close();
+                        continue;
+                    }
+                }
+                else if (excelType == 5)
+                {
+                    if (-startRow > (useRowCount < maxRow ? useRowCount : maxRow))//"a .xlsx"
+                    {
+                        Console.WriteLine("\r\n 当前表格为： " + listFile.Name + ",\r\n" +
+                                          "\r\n 您的开始行，和结束行，超出这个 Excel 总行数:" + " 1 ~ " + useRowCount + " \r\n" +
+                                          "\r\n 请根据Excel，调整输入行数范围：“a空格b” 或者 “a空格” \r\n");
+                        //Console.ReadLine();
+                        workbook1.Close();
+                        continue;
+                    }
+                    else
+                    {
+                        startRow = (useRowCount < maxRow ? useRowCount : maxRow) + startRow + 1;
+                        endRow = useRowCount < maxRow ? useRowCount : maxRow;
+                    }
                 }
 
 

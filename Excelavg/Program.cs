@@ -19,6 +19,8 @@ namespace Excelavg
     {
         static string excelname;
         const string extension = ".xlsx";
+        //const string extension = ".csv";
+        //const string extension = ".xls";
 
         const int minRow = 1;
         const int maxRow = 999;/////////////
@@ -40,15 +42,48 @@ namespace Excelavg
 
             int maxFile = 99;//一个文件夹最大文件数量
             bool ifNewExcel = true;
-            //Program program = new Program();
 
 
             //get directory info -----------------------------------------------------------------
             DirectoryInfo directoryInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
 
 
+            //get xlFileFormat -------------------------------------------------------------------
+            XlFileFormat xlFileFormat = XlFileFormat.xlCurrentPlatformText;
+            if (extension == ".xlsx")
+            {
+                xlFileFormat = XlFileFormat.xlOpenXMLWorkbook;
+            }
+            else if (extension == ".csv")
+            {
+                xlFileFormat = XlFileFormat.xlCSV;
+            }
+            else if (extension == ".xls")
+            {
+                Excel.Application Application = new Excel.Application();
+                string Version = Application.Version;
 
-            //get all ".xlsx" --------------------------------------------------------------
+                if (Convert.ToDouble(Version) < 12)//use Excel 97-2003
+                {
+                    xlFileFormat = XlFileFormat.xlWorkbookNormal;//-4143
+                }
+                else//use excel 2007 or later
+                {
+                    xlFileFormat = XlFileFormat.xlExcel8;//56
+                }
+                xlFileFormat = XlFileFormat.xlWorkbookNormal;
+
+                Application.Quit();
+            }
+            else
+            {
+                Console.WriteLine("不支持 “.xlsx” “.csv” “.xls” 以外的格式 ！！！");
+                Console.ReadKey();
+                return 0;
+            }
+
+
+            //get all ".xlsx" --------------------------------------------------------
             FileInfo[] files = directoryInfo.GetFiles();
             List<FileInfo> listFileInfos = new List<FileInfo>();
             for (int i = 0; i < (files.Length > maxFile ? maxFile : files.Length); i++)
@@ -61,7 +96,7 @@ namespace Excelavg
             }
 
 
-            //get startRow and endRow from XXXXXX.xlsx -----------------------------------------------
+            //get startRow and endRow from XXXXXX.xlsx --------------------------------------------
             int excelType = 0;
             foreach (var fi in listFileInfos)
             {
@@ -158,7 +193,7 @@ namespace Excelavg
             //get results from  XXX XXX.xlsx
             if (excelType <= 2)
             {
-                Console.WriteLine("\r\n******    当前文件夹没有找到 “a空格b" + extension +"” 或者 “a空格" + extension + "”类似的文件！    ******\r\n");
+                Console.WriteLine("\r\n******    当前文件夹没有找到 “a空格b" + extension +"” 或者 “a空格" + extension + "”类似的文件！    ******");
                 Console.WriteLine("\r\n  为了调整开始行，和结束行，您需要修改文件名的【输入格式 1】：\r\n" +
                                   "\r\n  从 [a] 行到 [b] 行, 或者 [a] 行到末尾行, 1 <= [a] <= [b] <= 999：\r\n" +
                                   "\r\n “a空格b" + extension + "” 或者 “a空格" + extension + "”\r\n" +
@@ -168,52 +203,63 @@ namespace Excelavg
             }
             else if(excelType >= 3)
             {
-                Console.WriteLine("\r\n******    恭喜您已经找到文件！    " +excelname + extension + "    ******\r\n");
+                Console.WriteLine("\r\n******    恭喜您已经找到文件！    “" +excelname + extension + "”    ******");
                 ifNewExcel = false;
             }
-            Console.WriteLine("\r\n*************************************************\r\n");
+            Console.WriteLine("********************************************************\r\n");
+
             //Input numbers for startRow and endRow
             while (excelType <= 2)
             {
                 startRow = 1;
                 endRow = 999;
-                Console.WriteLine("\r\n请按要求输入行数范围：“a空格b” 或者 “a空格” \r\n");
+                Console.WriteLine("请按要求输入行数范围：“a空格b” 或者 “a空格” \r\n");
                 excelname = Console.ReadLine();
-                //a
-                if (int.TryParse(excelname.Split(' ').First(), out startRow))
+                //' '
+                if (!(excelname.Contains(" ")))
                 {
-                    if (startRow < -maxRow || startRow == 0)
+                    excelType = excelType <= 0 ? 0 : excelType;
+                    continue;
+                }
+                else
+                {   //a
+                    if (int.TryParse(excelname.Split(' ').First(), out startRow))
                     {
-                        continue;
-                    }
-                    else if (-maxRow <= startRow && startRow < 0)
-                    {
-                        if (excelname.Last() == ' ')
-                        {
-                            excelType = 5;
-                        }
-                        else
+                        if (startRow < -maxRow || startRow == 0)
                         {
                             continue;
                         }
-                    }
-                    else if (minRow <= startRow && startRow <= maxRow)
-                    {
-                        if (excelname.Last() == ' ')
+                        else if (-maxRow <= startRow && startRow < 0)
                         {
-                            excelType = 3;
-                        }
-                        else if (int.TryParse(excelname.Split(' ').Last(), out endRow))
-                        {
-                            if (startRow <= endRow && endRow <= maxRow)
+                            if (excelname.Last() == ' ')
                             {
-                                excelType = 4;
+                                excelType = 5;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else if (minRow <= startRow && startRow <= maxRow)
+                        {
+                            if (excelname.Last() == ' ')
+                            {
+                                excelType = 3;
+                            }
+                            //b
+                            else if (int.TryParse(excelname.Split(' ').Last(), out endRow))
+                            {
+                                if (startRow <= endRow && endRow <= maxRow)
+                                {
+                                    excelType = 4;
+                                }
                             }
                         }
                     }
                 }
 
             }
+
             //adjust startRow + endRow
             if (excelType == 3)
             {
@@ -234,15 +280,15 @@ namespace Excelavg
                 endRow1 = endRow;
             }
 
-            Console.WriteLine("\r\n  开始行  =  " + string.Format("{0:G}", startRow) +
-                              "\r\n  结束行  =  " + string.Format("{0:G}", endRow) +
-                              "\r\n****************************************************\r\n");
+            Console.WriteLine("\r\n********  恭喜您成功创建/找到文件：  “" + excelname + extension + "”  ********\r\n" +
+                              "\r\n\t  开始行  =  " + string.Format("{0:G}", startRow) +
+                              "\t\t 结束行  =  " + string.Format("{0:G}", endRow) +
+                              "\r\n\r\n********************************************************");
             //Console.ReadKey();
             //return 0;
 
 
             object missing = System.Reflection.Missing.Value;
-
             //new excel *****************************************************************************
             //Excel.Application excel0 = new Excel.Application();
             //excel0.DisplayAlerts = false;//No warning, overwrite file
@@ -264,18 +310,18 @@ namespace Excelavg
             //Microsoft.Office.Interop.Excel.Sheets sheets1 = workbook1.Worksheets;
 
             //Excel.Worksheet worksheet1 = (Excel.Worksheet)sheets1.get_Item(1);
-            //
 
+            //if new excel
             Excel.Application excel0 = new Excel.Application();
             excel0.DisplayAlerts = false;//No warning, overwrite file
             Microsoft.Office.Interop.Excel.Workbook workbook0;
             if (ifNewExcel)
             {
                 workbook0 = excel0.Workbooks.Add(missing);
-                //第二个参数使用xlWorkbookNormal,则输出的是xls格式
-                //如果使用的是missing则输出系统中带有的EXCEL支持的格式
+                //第二个参数使用xlWorkbookNormal,则输出的是xls格式    //如果使用的是missing则输出系统中带有的EXCEL支持的格式
                 workbook0.SaveAs(AppDomain.CurrentDomain.BaseDirectory + excelname + extension,
-                                 missing, missing, missing, missing, missing, XlSaveAsAccessMode.xlNoChange, missing, missing, missing);
+                                 xlFileFormat, 
+                                 missing, missing, missing, missing, XlSaveAsAccessMode.xlNoChange, missing, missing, missing);
             }
             else
             {
@@ -285,13 +331,30 @@ namespace Excelavg
             }
             Microsoft.Office.Interop.Excel.Sheets sheets0 = workbook0.Worksheets;
 
-            Excel.Worksheet worksheet0 = (Excel.Worksheet)sheets0.get_Item(1);
+            Excel.Worksheet worksheet0 = (Excel.Worksheet)workbook0.Worksheets[1];
+            //choose blank worksheet0
+            for (int i = 1; i <= sheets0.Count; i++)
+            {
+                worksheet0 = (Excel.Worksheet)workbook0.Worksheets[i];
+                Range range = (Range)worksheet0.Cells[1, 1];
 
-            //add Worksheets
-            //workbook0.Worksheets.Add(missing, missing, missing, missing);
+                if (range.Value == null)
+                {
+                    break;//if range.value == null    then begin calculate data of excels
+                }
+                else
+                {
+                    if (i == sheets0.Count)//if range.value   then add worksheet
+                    {
+                        workbook0.Worksheets.Add(missing, workbook0.Worksheets[i], missing, missing);
+                        worksheet0 = (Excel.Worksheet)workbook0.Worksheets[i+1];
+                        break;
+                    }
+                }
+            }
 
-            worksheet0.Cells[1, 1] = 11;
-
+            //worksheet0.Cells[1, 1] = "Time: "+ DateTime.Now.ToString("MM月dd日 HHmmss");
+            worksheet0.Cells[1, 1] = (DateTime.Now.ToString("MM月dd日 HHmmss")).ToString();
 
             Excel.Application excel1 = new Excel.Application();
             int columnStatistics = 1;
@@ -313,57 +376,59 @@ namespace Excelavg
                 int useRowCount = worksheet1.UsedRange.Rows.Count;
                 int useColCount = worksheet1.UsedRange.Columns.Count;
 
-                //row
+                //calculate row
+                //restore the old startRow + endRow
                 startRow = startRow1 == 0 ? startRow : startRow1;
                 endRow = endRow1 == 0 ? endRow : endRow1;
+                bool isNormalRow = true;
                 if (excelType == 3)//"a .xlsx"
                 {
                     if (startRow <= (useRowCount < maxRow ? useRowCount : maxRow))
                     {
-                        Console.WriteLine("\r\n当前表格为： " + listFile.Name + ",\r\n" +
-                                          "\r\n您的开始行，和结束行，超出这个 Excel 总行数:" + " 1 ~ " + useRowCount + " \r\n" +
-                                          "\r\n请根据Excel，调整输入行数范围：“a空格b” 或者 “a空格” \r\n");
-
-                        workbook1.Close();
-                        continue;
-                    }
-                    else
-                    {
                         endRow = useRowCount < maxRow ? useRowCount : maxRow;
                     }
-                }
-                else if (excelType == 4)
-                {
-                    if (endRow > (useRowCount < maxRow ? useRowCount : maxRow))//"a b.xlsx"
+                    else
                     {
-                        Console.WriteLine("\r\n当前表格为： " + listFile.Name + ",\r\n" +
-                                          "\r\n您的开始行，和结束行，超出这个 Excel 总行数:" + " 1 ~ " + useRowCount + " \r\n" +
-                                          "\r\n请根据Excel，调整输入行数范围：“a空格b” 或者 “a空格” \r\n");
-                        //Console.ReadLine();
-                        workbook1.Close();
-                        continue;
+                        isNormalRow = false;
                     }
                 }
-                else if (excelType == 5)
+                else if (excelType == 4)//"a b.xlsx"
                 {
-                    if (-startRow > (useRowCount < maxRow ? useRowCount : maxRow))//"a .xlsx"
+                    if (endRow <= (useRowCount < maxRow ? useRowCount : maxRow))
                     {
-                        Console.WriteLine("\r\n 当前表格为： " + listFile.Name + ",\r\n" +
-                                          "\r\n 您的开始行，和结束行，超出这个 Excel 总行数:" + " 1 ~ " + useRowCount + " \r\n" +
-                                          "\r\n 请根据Excel，调整输入行数范围：“a空格b” 或者 “a空格” \r\n");
-                        //Console.ReadLine();
-                        workbook1.Close();
-                        continue;
+
                     }
                     else
+                    {
+                        isNormalRow = false;
+                    }
+                }
+                else if (excelType == 5)//"-a .xlsx"
+                {
+                    if (-startRow <= (useRowCount < maxRow ? useRowCount : maxRow))
                     {
                         startRow = (useRowCount < maxRow ? useRowCount : maxRow) + startRow + 1;
                         endRow = useRowCount < maxRow ? useRowCount : maxRow;
                     }
+                    else
+                    {
+                        isNormalRow = false;
+                    }
+                }
+                else
+                {
+                    isNormalRow = false;
+                }
+                if (isNormalRow == false)
+                {
+                    Console.WriteLine("\r\n 当前表格为： " + listFile.Name + ",\r\n" +
+                                      "\r\n 您的开始行，和结束行，超出这个 Excel 总行数:" + " 1 ~ " + useRowCount + " \r\n" +
+                                      "\r\n 请根据Excel，调整输入行数范围：“a空格b” 或者 “a空格” \r\n");
+                    workbook1.Close();
+                    continue;
                 }
 
-
-                //leftColumn
+                //calculate left Column
                 bool isDataColumn = true;
                 Excel.Range range1_0;
                 Excel.Range range1_1;
@@ -404,7 +469,6 @@ namespace Excelavg
                     //workbook1.Close();
                     break;
                 }
-
                 //only test left Column is Data？
                 if (isDataColumn == false)
                 {
@@ -413,7 +477,7 @@ namespace Excelavg
                     continue;
                 }
 
-                //rightColumn
+                //calculate right Column
                 for (int col = useColCount < maxColumn ? useColCount : maxColumn; col > leftColumn; col--)
                 {
                     //
@@ -440,19 +504,17 @@ namespace Excelavg
                     }
 
                     Console.WriteLine("\r\n\r\n rightColumn = col = " + col);
-                    //Console.WriteLine("\r\n\r\n 最后一列的头尾数据," + range1_0.Value.ToString() + " , " + range1_1.Value.ToString());
                     //workbook1.Close();
                     break;
                 }
 
 
-                //columstatistics
+                //add data to statistics
                 columnStatistics++;
                 {
                     Range range = (Range)(worksheet0.Cells[columnStatistics, 1]);
                     range.Value = listFile.Name;
                 }
-
                 for (int i = leftColumn; i <=rightColumn; i++)
                 {
                     var data = 0.0;
@@ -468,15 +530,7 @@ namespace Excelavg
                     range.Value = data / (endRow - startRow + 1);
                 }
 
-                
-                //for (int i = leftColumn; i <= rightColumn; i++)
-                //{
-                //    var data = 0;
-                //    Range range = (Range)worksheet0.Cells[columnStatistics, i];
-                //    data += range.Value;
-                //}
-
-
+                //just close workbook1
                 workbook1.Save();
                 workbook1.Close();
             }
@@ -487,8 +541,7 @@ namespace Excelavg
             workbook0.Close();
             excel0.Quit();
 
-            //System.IO.Stream s1 = new System.IO.FileStream(@"..\..\test.xlsx",);
-            Console.Read();
+            Console.ReadKey();
             return 0;
         }
 

@@ -1,4 +1,6 @@
-/Excelavg/obj/Debug
-/Excelavg/bin/Debug
+/Excelavg/obj/Debug/
+/Excelavg/bin/Debug/
 
 *.xlsx
+*.csv
+*.xls

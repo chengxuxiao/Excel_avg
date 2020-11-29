@@ -13,4 +13,3 @@ S:\Project_VS\ExcelProj\Excel_avg\Excelavg\obj\Debug\Excelavg.csproj.ResolveComR
 S:\Project_VS\ExcelProj\Excel_avg\Excelavg\obj\Debug\Excelavg.csproj.CoreCompileInputs.cache
 S:\Project_VS\ExcelProj\Excel_avg\Excelavg\obj\Debug\Excelavg.exe
 S:\Project_VS\ExcelProj\Excel_avg\Excelavg\obj\Debug\Excelavg.pdb
-S:\Project_VS\ExcelProj\Excel_avg\Excelavg\obj\Debug\Excelavg.csprojAssemblyReference.cache

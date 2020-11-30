@@ -6,7 +6,7 @@ auto calculate averages of Excels
 
         const int minColumn = 1;
         const int maxColumn = 99;
-
+#
 【1】 ------------------------------  "a b.xlsx"
 
 search for an excel file "XXX.xlsx"
@@ -30,7 +30,7 @@ Output average from row [a] to row [b] to specified excel "a b.xlsx"
 
 XXX.xlsx    4   5   6
 
-
+#
 【2】 ------------------------------  "a .xlsx"
 
 search for an excel file "YYY.xlsx"
@@ -45,7 +45,7 @@ Output average from row [a] to the last line to specified excel "a .xlsx"
 
 XXX.xlsx    4   5   6
 
-
+#
 【3】 ------------------------------  "a .xlsx"(a<0)
 
 search for an excel file "YYY.xlsx"
@@ -66,7 +66,7 @@ YYY.xlsx    4   5   6
 
 
 
-# By Xiao
+                                                -- By xiao
 # end
 
 
